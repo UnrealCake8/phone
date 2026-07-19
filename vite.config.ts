@@ -1,4 +1,12 @@
-import { defineConfig } from 'vite'
+import { cloudflare } from '@cloudflare/vite-plugin'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
-export default defineConfig({ plugins: [tsconfigPaths(), tanstackStart()] })
+import { defineConfig } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
+
+export default defineConfig({
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  plugins: [
+    cloudflare({ viteEnvironment: { name: 'ssr' } }),
+    tanstackStart(),
+  ],
+})

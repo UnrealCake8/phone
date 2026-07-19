@@ -1,3 +1,28 @@
-import { createFileRoute } from '@tanstack/react-router'; import { adminSupabase } from '@/lib/server/supabase'; import { twilioPublicUrl,verifyTwilioSignature } from '@/lib/server/twilio';
-const statuses:Record<string,string>={initiated:'initiating',ringing:'ringing',in_progress:'in-progress',answered:'in-progress',completed:'completed',busy:'busy',no_answer:'no-answer',canceled:'cancelled',failed:'failed'};
-export const Route=createFileRoute('/api/twilio/status')({server:{handlers:{POST:async({request})=>{const fields=Object.fromEntries((await request.formData()).entries().map(([k,v])=>[k,String(v)]));if(!verifyTwilioSignature(twilioPublicUrl(request),fields,request.headers.get('x-twilio-signature')))return new Response('Invalid Twilio signature',{status:403});const sid=fields.CallSid;const parent=fields.ParentCallSid;if(!sid)return new Response('Missing CallSid',{status:400});const db=adminSupabase();const {data:call}=await db.from('calls').select('id,status').or(`twilio_parent_call_sid.eq.${sid},twilio_parent_call_sid.eq.${parent ?? ''},id.eq.${fields.callRecordId ?? ''}`).maybeSingle();if(!call)return new Response(null,{status:204});const raw=fields.CallStatus??'failed';const status=statuses[raw]??'failed';const terminal=['completed','busy','no-answer','cancelled','failed'].includes(status);const update={status,twilio_parent_call_sid:parent??sid,twilio_child_call_sid:parent?sid:null,answered_at:raw==='answered'?new Date().toISOString():null,ended_at:terminal?new Date().toISOString():null,duration_seconds:fields.CallDuration?Number(fields.CallDuration):null,error_code:fields.ErrorCode??null,error_message:fields.ErrorMessage??null,price:fields.Price?Number(fields.Price):null,price_unit:fields.PriceUnit??null};if(call.status!==status || !terminal) await db.from('calls').update(update).eq('id',call.id);return new Response(null,{status:204})}}}}})
+import { createFileRoute } from '@tanstack/react-router'
+import { adminSupabase } from '@/lib/server/supabase'
+import { twilioPublicUrl, verifyTwilioSignature } from '@/lib/server/twilio'
+
+const statuses: Record<string, string> = { initiated: 'initiating', ringing: 'ringing', in_progress: 'in-progress', answered: 'in-progress', completed: 'completed', busy: 'busy', no_answer: 'no-answer', canceled: 'cancelled', failed: 'failed' }
+
+export const Route = createFileRoute('/api/twilio/status')({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const fields = Object.fromEntries(Array.from((await request.formData()).entries()).map(([key, value]) => [key, String(value)]))
+        if (!(await verifyTwilioSignature(twilioPublicUrl(request), fields, request.headers.get('x-twilio-signature')))) return new Response('Invalid Twilio signature', { status: 403 })
+        const sid = fields.CallSid
+        const parent = fields.ParentCallSid
+        if (!sid) return new Response('Missing CallSid', { status: 400 })
+        const db = adminSupabase()
+        const { data: call } = await db.from('calls').select('id,status').or(`twilio_parent_call_sid.eq.${sid},twilio_parent_call_sid.eq.${parent ?? ''},id.eq.${fields.callRecordId ?? ''}`).maybeSingle()
+        if (!call) return new Response(null, { status: 204 })
+        const raw = fields.CallStatus ?? 'failed'
+        const status = statuses[raw] ?? 'failed'
+        const terminal = ['completed', 'busy', 'no-answer', 'cancelled', 'failed'].includes(status)
+        const update = { status, twilio_parent_call_sid: parent ?? sid, twilio_child_call_sid: parent ? sid : null, answered_at: raw === 'answered' ? new Date().toISOString() : null, ended_at: terminal ? new Date().toISOString() : null, duration_seconds: fields.CallDuration ? Number(fields.CallDuration) : null, error_code: fields.ErrorCode ?? null, error_message: fields.ErrorMessage ?? null, price: fields.Price ? Number(fields.Price) : null, price_unit: fields.PriceUnit ?? null }
+        if (call.status !== status || !terminal) await db.from('calls').update(update).eq('id', call.id)
+        return new Response(null, { status: 204 })
+      },
+    },
+  },
+})
