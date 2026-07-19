@@ -1,0 +1,5 @@
+export const callStates = ['idle','requesting-microphone','preparing','connecting','ringing','connected','muted','disconnecting','completed','busy','no-answer','cancelled','failed'] as const
+export type CallState = (typeof callStates)[number]
+const transitions: Record<CallState, readonly CallState[]> = { idle:['requesting-microphone'], 'requesting-microphone':['preparing','failed','idle'], preparing:['connecting','failed','idle'], connecting:['ringing','connected','failed','disconnecting'], ringing:['connected','busy','no-answer','cancelled','failed','disconnecting'], connected:['muted','disconnecting','completed','failed'], muted:['connected','disconnecting','completed','failed'], disconnecting:['completed','failed'], completed:['idle'], busy:['idle'], 'no-answer':['idle'], cancelled:['idle'], failed:['idle'] }
+export function canTransition(from: CallState, to: CallState) { return transitions[from].includes(to) }
+export function safeCallState(value: string): CallState { return (callStates as readonly string[]).includes(value) ? value as CallState : 'failed' }

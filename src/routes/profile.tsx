@@ -1,0 +1,1 @@
+import { createFileRoute } from '@tanstack/react-router'; export const Route=createFileRoute('/profile')({component:()=> <section className="card"><h1>Profile</h1><p>Set your display name and avatar after signing in.</p></section>})

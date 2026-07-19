@@ -1,0 +1,8 @@
+{
+  "name": "uc8phone",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev":"vinxi dev","build":"vinxi build","start":"node .output/server/index.mjs","lint":"eslint .","format":"prettier --check .","typecheck":"tsc --noEmit","test":"vitest run","test:e2e":"playwright test","check:secrets":"node scripts/check-client-secrets.mjs"},
+  "dependencies": {"@supabase/ssr":"^0.6.1","@supabase/supabase-js":"^2.49.1","@tanstack/react-router":"^1.120.5","@tanstack/react-start":"^1.120.5","@twilio/voice-sdk":"^2.12.3","libphonenumber-js":"^1.12.8","react":"^19.1.0","react-dom":"^19.1.0","twilio":"^5.5.0","zod":"^3.24.2"},
+  "devDependencies": {"@playwright/test":"^1.52.0","@tanstack/router-plugin":"^1.120.5","@types/node":"^22.15.3","@types/react":"^19.1.2","@types/react-dom":"^19.1.2","@vitejs/plugin-react":"^4.4.1","autoprefixer":"^10.4.21","eslint":"^9.25.1","eslint-config-prettier":"^10.1.2","eslint-plugin-react-hooks":"^5.2.0","postcss":"^8.5.3","prettier":"^3.5.3","tailwindcss":"^3.4.17","typescript":"^5.8.3","vite":"^6.3.3","vitest":"^3.1.2","jsdom":"^26.1.0"}
+}

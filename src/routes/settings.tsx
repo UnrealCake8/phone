@@ -1,0 +1,1 @@
+import { createFileRoute } from '@tanstack/react-router'; export const Route=createFileRoute('/settings')({component:()=> <section className="card"><h1>Settings</h1><p>Choose your country, theme, microphone, and supported speaker device after signing in.</p></section>})

@@ -1,0 +1,1 @@
+import { createFileRoute } from '@tanstack/react-router'; export const Route=createFileRoute('/history')({component:()=> <section className="card"><h1>Call history</h1><p>Your completed calls are securely recorded by Twilio callbacks. Sign in to see your history.</p></section>})
