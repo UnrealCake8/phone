@@ -1,0 +1,1 @@
+import { test,expect } from '@playwright/test';test('landing explains browser calling',async({page})=>{await page.goto('/');await expect(page.getByText('Phone numbers. Real conversations.')).toBeVisible();await expect(page.getByRole('link',{name:'Sign in'})).toBeVisible()});
