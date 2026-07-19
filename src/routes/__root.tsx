@@ -12,6 +12,9 @@ export const Route = createRootRoute({
           <Link to="/app">Dialler</Link>
           <Link to="/history">History</Link>
           <Link to="/settings">Settings</Link>
+          <Link to="/auth" className="nav-account">
+            Account
+          </Link>
         </nav>
       </header>
       <main>

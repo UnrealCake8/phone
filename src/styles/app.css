@@ -376,3 +376,371 @@ input:focus {
     right: auto;
   }
 }
+
+/* Application surfaces */
+.nav-account {
+  margin-left: 0.35rem;
+  color: #f5faed;
+  background: #183e31;
+}
+.nav-account:hover {
+  color: #f5faed;
+  background: #285d44;
+}
+.hero-call-card {
+  position: absolute;
+  right: clamp(1.5rem, 5vw, 5rem);
+  bottom: 4.8rem;
+  width: min(280px, 31vw);
+  padding: 1.15rem;
+  color: #173c30;
+  background: #f5f8ec;
+  border-radius: 1.25rem;
+  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.18);
+  transform: rotate(4deg);
+}
+.call-card-top,
+.call-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #66776b;
+  font:
+    500 0.62rem "DM Mono",
+    monospace;
+  letter-spacing: 0.08em;
+}
+.call-card-top i {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #8fbc54;
+  box-shadow: 0 0 0 4px #e3efd6;
+}
+.call-avatar {
+  display: grid;
+  place-items: center;
+  width: 3.15rem;
+  height: 3.15rem;
+  margin: 1.25rem auto 0.7rem;
+  color: #f7faf1;
+  background: #426e5a;
+  border-radius: 50%;
+  font:
+    1.7rem "Instrument Serif",
+    serif;
+}
+.call-name,
+.call-number {
+  margin: 0;
+  text-align: center;
+}
+.call-name {
+  font-weight: 700;
+}
+.call-number {
+  margin-top: 0.25rem;
+  color: #728278;
+  font:
+    0.65rem "DM Mono",
+    monospace;
+}
+.call-wave {
+  display: flex;
+  height: 2.3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  margin: 1.2rem 0;
+}
+.call-wave span {
+  width: 3px;
+  height: 20%;
+  background: #83ae5c;
+  border-radius: 5px;
+}
+.call-wave span:nth-child(3n) {
+  height: 72%;
+}
+.call-wave span:nth-child(4n) {
+  height: 43%;
+}
+.call-wave span:nth-child(5n) {
+  height: 90%;
+}
+.call-status {
+  padding-top: 0.75rem;
+  border-top: 1px solid #dbe5d5;
+}
+.call-status button {
+  display: grid;
+  width: 1.7rem;
+  height: 1.7rem;
+  place-items: center;
+  color: white;
+  background: #b54435;
+  border: 0;
+  border-radius: 50%;
+  transform: rotate(45deg);
+}
+.landing-notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin: 1rem 0 0;
+  overflow: hidden;
+  background: #dfe6d9;
+  border: 1px solid #dfe6d9;
+  border-radius: 1.25rem;
+}
+.landing-notes > div {
+  min-height: 195px;
+  padding: 1.45rem;
+  background: rgba(255, 255, 252, 0.72);
+}
+.note-number {
+  color: #7d947d;
+  font:
+    0.68rem "DM Mono",
+    monospace;
+}
+.landing-notes h2 {
+  margin: 2rem 0 0.4rem;
+  font-size: 1.1rem;
+  letter-spacing: -0.04em;
+}
+.landing-notes p {
+  max-width: 270px;
+  margin: 0;
+  color: #637269;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.dialler-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(350px, 430px);
+  gap: clamp(2rem, 8vw, 8rem);
+  align-items: center;
+  min-height: 650px;
+}
+.dialler-intro {
+  max-width: 510px;
+}
+.dialler-intro h1,
+.empty-page h1 {
+  margin: 0;
+  font-size: clamp(3.1rem, 6.5vw, 5.8rem);
+  font-weight: 500;
+  letter-spacing: -0.075em;
+  line-height: 0.93;
+}
+.dialler-intro > p:not(.eyebrow) {
+  max-width: 410px;
+  margin: 1.5rem 0;
+  color: #5d6d65;
+  line-height: 1.65;
+}
+.desk-detail {
+  display: flex;
+  width: min(100%, 390px);
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-top: 1px solid #ccd8ca;
+  border-bottom: 1px solid #ccd8ca;
+}
+.desk-detail span {
+  color: #74847a;
+  font:
+    0.68rem "DM Mono",
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.desk-detail strong {
+  color: #377257;
+  font-size: 0.78rem;
+  text-transform: capitalize;
+}
+.dialler {
+  max-width: none;
+  margin: 0;
+  padding: 1.35rem;
+  background: #183e31;
+  border: 0;
+  border-radius: 1.6rem;
+  box-shadow: 0 1.4rem 3.5rem rgba(26, 55, 42, 0.18);
+}
+.dialler-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dialler .eyebrow {
+  color: #c9dcb8;
+}
+.signal {
+  display: flex;
+  align-items: end;
+  gap: 3px;
+  height: 1rem;
+}
+.signal i {
+  width: 3px;
+  background: #a9d470;
+  border-radius: 3px;
+}
+.signal i:nth-child(1) {
+  height: 30%;
+}
+.signal i:nth-child(2) {
+  height: 60%;
+}
+.signal i:nth-child(3) {
+  height: 100%;
+}
+.dialler h2 {
+  margin: 1.5rem 0 1.1rem;
+  color: #f5f8ec;
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.06em;
+}
+.dialler input {
+  color: #eff7e7;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(239, 247, 231, 0.19);
+}
+.dialler input::placeholder {
+  color: #b6c9b4;
+}
+.dialler input:focus {
+  border-color: #b9e280;
+  box-shadow: 0 0 0 3px rgba(185, 226, 128, 0.13);
+}
+.dialler .keypad {
+  margin: 1rem 0;
+  gap: 0.45rem;
+}
+.dialler .keypad button {
+  color: #f4f8eb;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dialler .keypad button:hover {
+  background: rgba(185, 226, 128, 0.2);
+}
+.dialler .actions {
+  display: grid;
+  grid-template-columns: auto 1fr 1.25fr;
+  margin-top: 0.6rem;
+}
+.dialler .actions .button {
+  min-height: 2.8rem;
+}
+.dialler .button {
+  color: #163c2f;
+  background: #b9e280;
+}
+.dialler .secondary {
+  color: #eff7e7;
+  background: transparent;
+  border-color: rgba(239, 247, 231, 0.28);
+}
+.dialler .danger {
+  color: white;
+  background: #b54435;
+}
+.icon-button {
+  width: 2.8rem;
+  color: #eff7e7;
+  background: transparent;
+  border: 1px solid rgba(239, 247, 231, 0.28);
+  border-radius: 0.75rem;
+}
+.empty-page {
+  position: relative;
+  min-height: 560px;
+  padding: clamp(2rem, 8vw, 6rem);
+  overflow: hidden;
+  color: #eff7e7;
+  background: #183e31;
+  border-radius: 1.8rem;
+}
+.empty-page::after {
+  content: "";
+  position: absolute;
+  width: 31rem;
+  height: 31rem;
+  right: -10rem;
+  bottom: -20rem;
+  border: 1px solid rgba(239, 247, 231, 0.25);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 3rem rgba(239, 247, 231, 0.035),
+    0 0 0 8rem rgba(239, 247, 231, 0.03);
+}
+.empty-page .eyebrow {
+  color: #c9dcb8;
+}
+.empty-page > p:not(.eyebrow) {
+  max-width: 390px;
+  margin: 1.5rem 0;
+  color: #cbdac7;
+  line-height: 1.6;
+}
+.empty-rule {
+  width: min(100%, 390px);
+  height: 1px;
+  margin-top: 3rem;
+  background: rgba(239, 247, 231, 0.3);
+}
+.empty-symbol {
+  position: absolute;
+  z-index: 1;
+  right: clamp(2rem, 9vw, 8rem);
+  bottom: 4rem;
+  color: #b9e280;
+  font:
+    8rem "Instrument Serif",
+    serif;
+}
+@media (max-width: 760px) {
+  .hero {
+    min-height: 670px;
+  }
+  .hero-call-card {
+    right: 2rem;
+    bottom: 5.6rem;
+    width: 230px;
+  }
+  .landing-notes,
+  .dialler-shell {
+    grid-template-columns: 1fr;
+  }
+  .dialler-shell {
+    min-height: auto;
+  }
+  .dialler-intro {
+    padding-top: 1rem;
+  }
+  .dialler {
+    margin-bottom: 1rem;
+  }
+  .nav-account {
+    display: none;
+  }
+}
+@media (max-width: 430px) {
+  .hero-call-card {
+    display: none;
+  }
+  .hero {
+    min-height: 560px;
+  }
+  .landing-notes > div {
+    min-height: 160px;
+  }
+  .dialler .actions {
+    grid-template-columns: auto 1fr 1fr;
+  }
+}
