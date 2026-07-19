@@ -1,69 +1,96 @@
 # UC8Phone
 
-UC8Phone is a Node-hosted TanStack Start application for real browser-to-phone calls. The browser uses Twilio Voice JavaScript SDK WebRTC; it does **not** simulate calls or create a click-to-call bridge. Supabase authenticates users and stores call audit/history data. Twilio webhooks are the authority for final status, duration, price, and errors.
+UC8Phone is a TanStack Start application for real browser-to-phone calls. The browser uses the Twilio Voice JavaScript SDK and Supabase authenticates users and stores call audit/history data. It is deployed as a **Cloudflare Worker** with SSR, server functions, API routes, and static assets; it is not a Pages site or a persistent Node/Vinxi server.
 
-## Plan and prerequisites
+## Local setup
 
-The clean-replacement plan is in [PLAN.md](PLAN.md). Install Node 22+, Bun 1.2.15, a Supabase project, a Twilio account with Voice enabled, and a public HTTPS URL (microphone and production webhooks require HTTPS).
+Install Node 22+, Bun 1.2.15, a Supabase project, a Twilio account with Voice enabled, and a public HTTPS URL for production webhooks.
 
 ```bash
-cp .env.example .env
 bun install
 bun run dev
 ```
 
-Environment variables used by the implementation:
+Use a local `.env` (never commit it) for development. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are the only browser-visible build variables. The matching `SUPABASE_URL` and `SUPABASE_ANON_KEY` values are also required at runtime by server functions.
 
-| Browser-safe | Server-only |
-|---|---|
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_AUTH_TOKEN`, `TWILIO_TWIML_APP_SID`, `TWILIO_CALLER_ID`, `PUBLIC_APP_URL`, `SUPPORTED_CALLING_COUNTRIES`, `BLOCKED_NUMBER_PREFIXES`, `MAX_CALL_ATTEMPTS_PER_MINUTE`, `MAX_DAILY_CALL_ATTEMPTS`, `MAX_DAILY_CONNECTED_MINUTES`, `MAX_CONCURRENT_CALLS` |
+## Cloudflare Workers deployment
 
-Never prefix a secret with `VITE_`. `bun run check:secrets` rejects known Twilio/service-role secret prefixes in client source.
+The project uses the supported TanStack Start Cloudflare Vite integration (`@cloudflare/vite-plugin`) and `wrangler.jsonc`. `wrangler` deploys `@tanstack/react-start/server-entry`, including SSR, SPA fallback, API routes, and Vite-built assets. `node .output/server/index.mjs` is not a production start command.
+
+1. Authenticate and install dependencies:
+
+   ```bash
+   bun install
+   bunx wrangler login
+   ```
+
+2. In the Cloudflare dashboard, create a **Workers** application named `uc8phone` (do **not** create a Pages project). Alternatively, the first `bun run deploy` creates the Worker named in `wrangler.jsonc`.
+3. Configure the runtime values below. Use **Settings → Variables and Secrets** in the Worker dashboard, or run `bunx wrangler secret put NAME` once for each value. Secrets must never be committed.
+
+| Name | Configure as | Required value |
+|---|---|---|
+| `SUPABASE_URL` | Secret or encrypted Worker variable | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Secret or encrypted Worker variable | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Secret** | Supabase service-role key |
+| `TWILIO_ACCOUNT_SID` | **Secret** | Twilio Account SID |
+| `TWILIO_API_KEY_SID` | **Secret** | Standard Twilio API Key SID |
+| `TWILIO_API_KEY_SECRET` | **Secret** | Standard Twilio API Key secret |
+| `TWILIO_AUTH_TOKEN` | **Secret** | Twilio Auth Token |
+| `TWILIO_TWIML_APP_SID` | **Secret** | TwiML App SID |
+| `TWILIO_CALLER_ID` | **Secret** | Voice-capable E.164 caller ID |
+| `PUBLIC_APP_URL` | Secret or encrypted Worker variable | Exact final HTTPS origin, e.g. `https://phone.example.com` |
+| `SUPPORTED_CALLING_COUNTRIES` | Worker variable | Comma-separated ISO country codes; default `US,CA,GB` |
+| `BLOCKED_NUMBER_PREFIXES` | Worker variable | Comma-separated E.164 prefixes; may be empty |
+| `MAX_CALL_ATTEMPTS_PER_MINUTE` | Worker variable | Positive integer; default `3` |
+| `MAX_DAILY_CALL_ATTEMPTS` | Worker variable | Positive integer; default `20` |
+| `MAX_DAILY_CONNECTED_MINUTES` | Worker variable | Positive integer; default `60` |
+| `MAX_CONCURRENT_CALLS` | Worker variable | Positive integer; default `1` |
+
+`nodejs_compat` is intentionally enabled in `wrangler.jsonc`: TanStack Start's Worker integration and the validated runtime configuration use the Workers `process.env` compatibility bridge. Server-side Twilio JWT and webhook verification use Web Crypto instead of the Node Twilio SDK, so Twilio credentials remain Worker-only.
+
+4. In the Workers Build settings/CI environment (or local `.env` before `bun run build`), set these public build variables:
+
+   ```text
+   VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+   ```
+
+5. Build and deploy:
+
+   ```bash
+   bun run build
+   bun run deploy
+   ```
+
+   To preview the compiled Worker locally, use `bun run preview`. To generate Worker binding types after changing `wrangler.jsonc`, use `bun run cf-typegen`.
+
+6. For a custom domain, add the domain in **Workers → uc8phone → Settings → Domains & Routes → Add → Custom Domain**. Cloudflare provisions TLS and DNS for a zone in the same account. For external DNS, create the DNS record Cloudflare displays. Then set `PUBLIC_APP_URL` to that exact `https://` origin (without a path), redeploy, and add `${PUBLIC_APP_URL}/auth` and `${PUBLIC_APP_URL}/app` to Supabase Auth redirect URLs.
+
+7. Configure Twilio only after the final domain is live:
+   * TwiML App Voice Request URL: `${PUBLIC_APP_URL}/api/twilio/voice` (POST).
+   * Status callbacks: `${PUBLIC_APP_URL}/api/twilio/status` (POST).
+
+   The webhook handlers validate Twilio's signature against `PUBLIC_APP_URL` plus the received path/query, rather than trusting forwarded-host headers. Twilio webhooks must therefore target the final HTTPS Worker/custom-domain URL exactly. Do not disable signature verification.
 
 ## Supabase setup
 
-1. Create a project and run `supabase/migrations/202607190001_uc8phone.sql` using the SQL editor or `supabase db push`.
-2. Set the project URL and anon key in both matching `VITE_` variables and server variables. Put the service-role key **only** in the server environment.
-3. In **Authentication → URL Configuration**, add local and production redirect URLs: `http://localhost:3000/auth`, `https://uc8phone.unrealcake8.site/auth`, and `/app` equivalents.
-4. Enable email/password sign-up. Configure email delivery for password reset and confirmation.
-5. For Google, create OAuth credentials at Google, add Supabase's callback URL to Google, then enable Google in Supabase Auth and add the client ID/secret there.
+1. Run `supabase/migrations/202607190001_uc8phone.sql` with the SQL editor or `supabase db push`.
+2. Enable email/password sign-up and configure email delivery. Configure Google OAuth in Supabase if desired.
+3. RLS allows users to read their own calls and only hide their own history. Server functions authenticate the request user before using the service-role client.
 
-RLS allows users to read their own calls and only hide their own history; browser clients cannot update trusted Twilio/billing fields. Server functions authenticate the request user and use the service-role client only after that check.
+## Twilio security
 
-## Twilio Console setup
+Create a standard Twilio API key and a TwiML App, use a Voice-capable E.164 caller ID, restrict geographic permissions to `SUPPORTED_CALLING_COUNTRIES`, and block premium/emergency prefixes with `BLOCKED_NUMBER_PREFIXES`. Browser code receives only short-lived Voice access tokens; no Twilio API secret, Auth Token, Account SID, or service-role key is exposed to Vite.
 
-1. Buy/configure a Voice-capable caller ID and set it as `TWILIO_CALLER_ID` in E.164 form.
-2. Create a Twilio API Key (Standard) and set its SID/secret plus Account SID as server secrets.
-3. Create a **TwiML App**. Set its Voice Request URL to `https://uc8phone.unrealcake8.site/api/twilio/voice`, method POST; copy the App SID to `TWILIO_TWIML_APP_SID`.
-4. Set call status callback URLs to `https://uc8phone.unrealcake8.site/api/twilio/status` where required. The generated TwiML also supplies this callback.
-5. Set `TWILIO_AUTH_TOKEN` only on the server. Never send it to the browser.
-6. Restrict geographic permissions in Twilio to the countries listed in `SUPPORTED_CALLING_COUNTRIES`; block premium/emergency prefixes with `BLOCKED_NUMBER_PREFIXES`.
-
-The Voice and status endpoints validate the Twilio signature against the exact public URL. Configure a reverse proxy to forward `X-Forwarded-Proto: https` and `X-Forwarded-Host: uc8phone.unrealcake8.site`; mismatch causes a deliberate 403. In local development, `PUBLIC_APP_URL` must match the URL Twilio actually reaches (typically a tunnel).
-
-## Deploying on Node and DNS
-
-Run `bun run build`, then `bun run start`. Deploy the generated Node server to a standard Node-compatible host; do not use a Worker/Cloudflare preset. Configure the host to send every application request to this server, preserving SPA fallback and SSR route handling. Point the DNS CNAME/A record for `uc8phone.unrealcake8.site` at the host, attach a valid TLS certificate, set `PUBLIC_APP_URL=https://uc8phone.unrealcake8.site`, and configure proxy headers above.
-
-The project is pinned to Bun 1.2.15 and Node 22+ so the deployment environment uses the toolchain it was tested with. The direct package versions are intentionally exact: an install must not silently select newer versions within a compatible range. After an intentional dependency update, run `bun install` and commit the resulting `bun.lock`; CI should then use `bun install --frozen-lockfile` followed by `bun run build`.
-
-## Verification commands
+## Verification
 
 ```bash
 bun run check:secrets
 bun run typecheck
 bun run lint
 bun run test
-bun run test:e2e
 bun run build
-bun run start
+bunx wrangler deploy --dry-run
 ```
 
-Tests mock the calling boundary and never place real calls. Complete a manual smoke test only with a permitted destination: sign in, authorize the microphone, dial, answer, verify two-way audio, mute/unmute, hang up, then confirm Twilio's signed status callback updates history.
-
-## Troubleshooting
-
-* **Microphone unavailable:** use HTTPS, grant browser permission, and ensure an input device is selected by the OS.
-* **WebRTC cannot connect:** verify Twilio Voice geographic permissions, browser network access to Twilio, token API key/App SID, and caller ID.
-* **Webhook 403:** check the exact Twilio URL, `PUBLIC_APP_URL`, TLS, and forwarded protocol/host; do not disable signature verification.
-* **Call rejected:** use a valid E.164 destination in `SUPPORTED_CALLING_COUNTRIES` that does not match blocked prefixes or daily/rate limits.
+For a live smoke test, sign in, authorize the microphone, call a permitted destination, answer, verify two-way audio and mute/hangup, then confirm the signed status callback updates history.

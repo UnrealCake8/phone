@@ -1,4 +1,30 @@
 import { z } from 'zod'
-const schema = z.object({ SUPABASE_URL:z.string().url(), SUPABASE_ANON_KEY:z.string().min(1), SUPABASE_SERVICE_ROLE_KEY:z.string().min(1), TWILIO_ACCOUNT_SID:z.string().min(1), TWILIO_API_KEY_SID:z.string().min(1), TWILIO_API_KEY_SECRET:z.string().min(1), TWILIO_AUTH_TOKEN:z.string().min(1), TWILIO_TWIML_APP_SID:z.string().min(1), TWILIO_CALLER_ID:z.string().min(1), PUBLIC_APP_URL:z.string().url(), SUPPORTED_CALLING_COUNTRIES:z.string().default('US,CA,GB'), BLOCKED_NUMBER_PREFIXES:z.string().default('') , MAX_CALL_ATTEMPTS_PER_MINUTE:z.coerce.number().int().positive().default(3), MAX_DAILY_CALL_ATTEMPTS:z.coerce.number().int().positive().default(20), MAX_DAILY_CONNECTED_MINUTES:z.coerce.number().int().positive().default(60), MAX_CONCURRENT_CALLS:z.coerce.number().int().positive().default(1) })
+
+const schema = z.object({
+  SUPABASE_URL: z.string().url(),
+  SUPABASE_ANON_KEY: z.string().min(1),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  TWILIO_ACCOUNT_SID: z.string().min(1),
+  TWILIO_API_KEY_SID: z.string().min(1),
+  TWILIO_API_KEY_SECRET: z.string().min(1),
+  TWILIO_AUTH_TOKEN: z.string().min(1),
+  TWILIO_TWIML_APP_SID: z.string().min(1),
+  TWILIO_CALLER_ID: z.string().min(1),
+  PUBLIC_APP_URL: z.string().url().transform((value) => value.replace(/\/$/, '')),
+  SUPPORTED_CALLING_COUNTRIES: z.string().default('US,CA,GB'),
+  BLOCKED_NUMBER_PREFIXES: z.string().default(''),
+  MAX_CALL_ATTEMPTS_PER_MINUTE: z.coerce.number().int().positive().default(3),
+  MAX_DAILY_CALL_ATTEMPTS: z.coerce.number().int().positive().default(20),
+  MAX_DAILY_CONNECTED_MINUTES: z.coerce.number().int().positive().default(60),
+  MAX_CONCURRENT_CALLS: z.coerce.number().int().positive().default(1),
+})
+
 export type ServerEnv = z.infer<typeof schema>
-export function serverEnv(): ServerEnv { return schema.parse(process.env) }
+
+/**
+ * `nodejs_compat` maps Worker vars and secrets onto process.env. This also keeps
+ * local Vite development and tests on the same validated configuration path.
+ */
+export function serverEnv(source: Record<string, string | undefined> = process.env): ServerEnv {
+  return schema.parse(source)
+}
