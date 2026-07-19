@@ -4,12 +4,12 @@ UC8Phone is a Node-hosted TanStack Start application for real browser-to-phone c
 
 ## Plan and prerequisites
 
-The clean-replacement plan is in [PLAN.md](PLAN.md). Install Node 22+, npm, a Supabase project, a Twilio account with Voice enabled, and a public HTTPS URL (microphone and production webhooks require HTTPS).
+The clean-replacement plan is in [PLAN.md](PLAN.md). Install Node 22+, Bun 1.2.15, a Supabase project, a Twilio account with Voice enabled, and a public HTTPS URL (microphone and production webhooks require HTTPS).
 
 ```bash
 cp .env.example .env
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 Environment variables used by the implementation:
@@ -18,7 +18,7 @@ Environment variables used by the implementation:
 |---|---|
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_AUTH_TOKEN`, `TWILIO_TWIML_APP_SID`, `TWILIO_CALLER_ID`, `PUBLIC_APP_URL`, `SUPPORTED_CALLING_COUNTRIES`, `BLOCKED_NUMBER_PREFIXES`, `MAX_CALL_ATTEMPTS_PER_MINUTE`, `MAX_DAILY_CALL_ATTEMPTS`, `MAX_DAILY_CONNECTED_MINUTES`, `MAX_CONCURRENT_CALLS` |
 
-Never prefix a secret with `VITE_`. `npm run check:secrets` rejects known Twilio/service-role secret prefixes in client source.
+Never prefix a secret with `VITE_`. `bun run check:secrets` rejects known Twilio/service-role secret prefixes in client source.
 
 ## Supabase setup
 
@@ -43,18 +43,20 @@ The Voice and status endpoints validate the Twilio signature against the exact p
 
 ## Deploying on Node and DNS
 
-Run `npm run build`, then `npm run start`. Deploy the generated Node server to a standard Node-compatible host; do not use a Worker/Cloudflare preset. Configure the host to send every application request to this server, preserving SPA fallback and SSR route handling. Point the DNS CNAME/A record for `uc8phone.unrealcake8.site` at the host, attach a valid TLS certificate, set `PUBLIC_APP_URL=https://uc8phone.unrealcake8.site`, and configure proxy headers above.
+Run `bun run build`, then `bun run start`. Deploy the generated Node server to a standard Node-compatible host; do not use a Worker/Cloudflare preset. Configure the host to send every application request to this server, preserving SPA fallback and SSR route handling. Point the DNS CNAME/A record for `uc8phone.unrealcake8.site` at the host, attach a valid TLS certificate, set `PUBLIC_APP_URL=https://uc8phone.unrealcake8.site`, and configure proxy headers above.
+
+The project is pinned to Bun 1.2.15 and Node 22+ so the deployment environment uses the toolchain it was tested with. The direct package versions are intentionally exact: an install must not silently select newer versions within a compatible range. After an intentional dependency update, run `bun install` and commit the resulting `bun.lock`; CI should then use `bun install --frozen-lockfile` followed by `bun run build`.
 
 ## Verification commands
 
 ```bash
-npm run check:secrets
-npm run typecheck
-npm run lint
-npm run test
-npm run test:e2e
-npm run build
-npm run start
+bun run check:secrets
+bun run typecheck
+bun run lint
+bun run test
+bun run test:e2e
+bun run build
+bun run start
 ```
 
 Tests mock the calling boundary and never place real calls. Complete a manual smoke test only with a permitted destination: sign in, authorize the microphone, dial, answer, verify two-way audio, mute/unmute, hang up, then confirm Twilio's signed status callback updates history.
